@@ -12,7 +12,7 @@
 ;; TODO switch swiper to be 'M-s'
 ;; TODO yasnippet
 
-(setq user-emacs-directory "~/code/playing/.emacs.d.new/")
+;; (setq user-emacs-directory "~/code/playing/.emacs.d.new/")
 
 (setq user-full-name "Devin Sackett")
 (setq user-mail-address "dsac@hotmail.com")
@@ -483,7 +483,6 @@
 	persp-remove-buffers-from-nil-persp-behaviour nil
 	persp-auto-resume-time -1
 	persp-auto-save-opt (if noninteractive 0 1)))
-
 
 ;; *** lsp-mode
 ;; [[https://emacs-lsp.github.io/lsp-mode/][lsp-mode]] enables IDE-like functionality for many different programming languages.
