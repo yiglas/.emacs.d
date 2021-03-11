@@ -248,14 +248,14 @@
 ;; ---------------------------------------------------------------------
 ;; * Text Scalling
 ;; [[https://github.com/abo-abo/hydra][Hydra]] to design a transient key binding for quickly adjusting the scale of the text on screen
-(use-package hydra
-  :defer t)
+;; (use-package hydra
+;;   :defer t)
 
-(defhydra hydra-text-scale (:timeout 4)
-  "scale text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("f" nil "finished" :exit t))
+;; (defhydra hydra-text-scale (:timeout 4)
+;;   "scale text"
+;;   ("j" text-scale-increase "in")
+;;   ("k" text-scale-decrease "out")
+;;   ("f" nil "finished" :exit t))
 
 ;; ---------------------------------------------------------------------
 ;; * Org
@@ -429,11 +429,12 @@
 ;; *** treemacs
 ;; [[https://github.com/Alexander-Miller/treemacs][treemacs]] enables a tree layout file explorer for Emacs
 (use-package treemacs
-  :bind ("C-x t" . treemacs)
+  ;; :bind ("C-x t" . treemacs)
   :init
   (setq treemacs-is-never-other-window t
 	treemacs-sorting 'alphabetic-case-insensitive-asc)
   :config
+  (global-set-key (kbd "C-x t") 'treemacs)
   (treemacs-follow-mode -1))
 
 (defun yiglas-project-root (&optional dir)
@@ -469,6 +470,19 @@
   :config (treemacs-set-scope-type 'Perspectives))
 
 ;; *** Persp
+;; [[https://github.com/Bad-ptr/persp-mode.el][persp-mode]]
+(use-package persp-mode
+  :commands persp-switch-to-buffer
+  :config
+  (setq persp-autokill-buffer-on-remove 'kill-weak
+	persp-reset-windows-on-nil-window-conf nil
+	persp-nil-hidden t
+	persp-auto-save-fname "autosave"
+	persp-switch-to-added-buffer nil
+	persp-kill-foreign-buffer-behaviour 'kill
+	persp-remove-buffers-from-nil-persp-behaviour nil
+	persp-auto-resume-time -1
+	persp-auto-save-opt (if noninteractive 0 1)))
 
 
 ;; *** lsp-mode
@@ -571,10 +585,19 @@
 (use-package projectile
   :diminish projectile-mode
   :config (projectile-mode)
+  (setq projectile-project-root-files-bottom-up
+	(append '(".projectile" ; projectile's root marker
+		  ".git" ; git VCS root dir
+		  ".sln" ; dotnet's root marker
+		  ))
+	projectile-project-root-files '()
+	projectile-project-root-files-top-down-recurring '("Makefile"))
   :custom ((projectile-completion-system 'ivy))
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
+  (setq projectile-globally-ignored-files '(".DS_Store" "TAGS")
+	projectile-auto-discover nil)
   (when (file-directory-p "~/code")
     (setq projectile-project-search-path `("~/code")))
   (setq projectile-switch-project-action #'projectile-dired))
@@ -596,6 +619,7 @@
   :after magit)
 
 ;; ** Smartparens
+;; TODO: fix error: Eager macro-expansion failure: (wrong-type-argument listp [(first-item . rest-items) (sp-get-list-items)])
 (use-package smartparens
   :init
   (smartparens-global-mode)
@@ -627,13 +651,13 @@
 (use-package tree-sitter
   :after csharp-mode-hook)
 
-(use-package tree-sitter-langs)
+(use-package tree-sitter-langs
+  :after tree-sitter-mode-hook)
 
 (use-package sharper
   :bind ("C-x d" . sharper-main-transient))
 
 ;; ** Extra
-
 
 ;; *** Eshell-toggle
 (use-package eshell-toggle
