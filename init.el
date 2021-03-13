@@ -11,8 +11,9 @@
 ;; TODO switch 'C-s' to be i-search, then 'C-s' to move to next search and 'C-r' to move to previous search
 ;; TODO switch swiper to be 'M-s'
 ;; TODO yasnippet
+;; TODO fix projectile search regex
+;; TODO fix auto completion when typeing word it fills the word for you
 
-;; (setq user-emacs-directory "~/code/playing/.emacs.d.new/")
 
 (setq user-full-name "Devin Sackett")
 (setq user-mail-address "dsac@hotmail.com")
@@ -33,6 +34,37 @@
   "Reload init.el"
   (interactive)
   (load-file (expand-file-name (concat user-emacs-directory "init.el"))))
+
+(defun yiglas-enlist (exp)
+  "Return EXP wrapped in a list, or as-is if already a list"
+  (declare (pure t) (side-effect-free t))
+  (if (listp exp) exp (list exp)))
+
+(defmacro :add-advice (symbol arglist &optional docstring &rest body)
+  "Define an advice called SYMBOL and add it to PLACES.
+
+ARGLIST is as in `defun`.
+WHERE is a keyword as passed to `advice-add`.
+PLACE is the function to which to add the advice.
+DOCSTRING & BODY are as in `defun`"
+  (declare (doc-string 3) (indent defun))
+  (unless (stringp docstring)
+    (push docstring body)
+    (setq docstring-nil))
+  (let (where-alist)
+    (while (keywordp (car body))
+      (push `(cons ,(pop body) (yiglas-enlist ,(pop body)))
+	    where-alist))
+    `(progn
+       (defun ,symbol ,arglist ,docstring ,@body)
+       (dolist (targets (list ,@(nreverse where-alist)))
+	 (dolist (target (cdr targets))
+	   (advice-add target (car targets) #',symbol))))))
+
+;;(:add-advice +yiglas-ignore-window-parameters-a (orig-fn &rest args)
+;;  "Allow *interactive* window moving commands to traverse popups."
+;;  :around '(windmove-up windmove-down windmove-left windmove-right)
+;;  (left!))
 
 ;; ---------------------------------------------------------------------
 ;; ** Package system setup
@@ -68,6 +100,9 @@
 ;; ---------------------------------------------------------------------
 ;; * Basic UI configuration
 (setq inhibit-startup-message t)
+
+(setq initial-scratch-message "")
+(setq initial-major-mode 'fundamental-mode)
 
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
@@ -120,6 +155,7 @@
   (interactive)
   (save-excursion (comment-line 1)))
 
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 (global-set-key (kbd "C-x C-b") 'buffer-menu)
 (global-set-key (kbd "M-n") 'yiglas-make-frame)
 (global-set-key (kbd "C-x C-c") 'yiglas-delete-frame-or-kill-emacs)
@@ -431,8 +467,7 @@
 (use-package treemacs
   ;; :bind ("C-x t" . treemacs)
   :init
-  (setq treemacs-is-never-other-window t
-	treemacs-sorting 'alphabetic-case-insensitive-asc)
+  (setq treemacs-sorting 'alphabetic-case-insensitive-asc)
   :config
   (global-set-key (kbd "C-x t") 'treemacs)
   (treemacs-follow-mode -1))
@@ -587,7 +622,6 @@
   (setq projectile-project-root-files-bottom-up
 	(append '(".projectile" ; projectile's root marker
 		  ".git" ; git VCS root dir
-		  ".sln" ; dotnet's root marker
 		  ))
 	projectile-project-root-files '()
 	projectile-project-root-files-top-down-recurring '("Makefile"))
@@ -656,6 +690,9 @@
 (use-package sharper
   :bind ("C-x d" . sharper-main-transient))
 
+;; ** Java
+
+
 ;; ** Extra
 
 ;; *** Eshell-toggle
@@ -713,3 +750,30 @@
   :hook ((text-mode prog-mode) . git-gutter-mode)
   :config
   (setq git-gutter:update-interval 2))
+
+;; ** Persitent scratch
+;; [[https://github.com/Fanael/persistent-scratch][persitent-scratch]] is an Emacs package that preserves the state of my scratch buffer.
+(use-package persistent-scratch
+  :commands persistent-scratch-setup-default
+  :hook (after-init . persistent-scratch-setup-default))
+
+;; ** Dotenv
+;; [[https://github.com/preetpalS/emacs-dotenv-mode][dotenv-mode]] give support for .env files
+(use-package dotenv-mode
+  :mode "\\.env\\'"
+  :mode "\\.env.example\\'")
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(dotenv-mode persistent-scratch wucuo which-key use-package typescript-mode treemacs-projectile treemacs-persp treemacs-magit smartparens sharper rainbow-delimiters prettier-js org-bullets no-littering lsp-ui lsp-ivy ivy-rich hl-todo helpful git-gutter format-all forge eshell-toggle doom-themes doom-modeline dimmer dap-mode csharp-mode counsel-projectile company-box command-log-mode)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(mode-line ((t (:height 0.85))))
+ '(mode-line-inactive ((t (:height 0.85)))))
