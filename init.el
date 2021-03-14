@@ -427,10 +427,36 @@ DOCSTRING & BODY are as in `defun`"
 
 ;; ** Nicer header bullets
 ;; [[https://github.com/sabof/org-bullets][org-bullets]] replaces the heading stars in =org-mode= buffers with nicer looking characters that you can control.
-(use-package org-bullets
-  :hook (org-mode . org-bullets-mode)
+;; (use-package org-bullets
+;;   :hook (org-mode . org-bullets-mode)
+;;   :custom
+;;   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+
+;; [[]] Use bullet characters instead of asterisks, plus set the header font sizes to something more palatable. A fair amount of inspiration has been taken from this blog post.
+(use-package org-superstar
+  :after org
+  :hook (org-mode . org-superstar-mode)
   :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+  (org-superstar-remove-leading-stars t)
+  (org-superstar-headline-bullets-list '("◉" "○" "●" "○" "●" "○" "●")))
+
+
+(custom-theme-set-faces
+   'user
+   '(org-block ((t (:inherit fixed-pitch))))
+   '(org-code ((t (:inherit (shadow fixed-pitch)))))
+   '(org-document-info ((t (:foreground "dark orange"))))
+   '(org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
+   '(org-indent ((t (:inherit (org-hide fixed-pitch)))))
+   '(org-link ((t (:foreground "royal blue" :underline t))))
+   '(org-meta-line ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+   '(org-property-value ((t (:inherit fixed-pitch))) t)
+   '(org-special-keyword ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+   '(org-table ((t (:inherit fixed-pitch :foreground "#83a598"))))
+   '(org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.8))))
+   '(org-verbatim ((t (:inherit (shadow fixed-pitch))))))
+
+
 
 ;; ** Configure babel languages
 ;; To execute or export code in =org-mode= code blocks, you'll need to set up =org-babel-load-languages= for each language you'd like to use.  [[https://orgmode.org/worg/org-contrib/babel/languages.html][This page]] documents all of the languages that you can use with =org-babel=.
@@ -438,6 +464,8 @@ DOCSTRING & BODY are as in `defun`"
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)))
+     ;; (csharp . t)
+     ;; (typescript . t)))
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 
 ;; ** Structure templates
@@ -445,7 +473,7 @@ DOCSTRING & BODY are as in `defun`"
 (with-eval-after-load 'org
   (require 'org-tempo)
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-list")))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp")))
 
 ;; ** Auto-tangle configuration files
 (defun yiglas-org-babel-tangle-config ()
@@ -769,7 +797,7 @@ DOCSTRING & BODY are as in `defun`"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(dotenv-mode persistent-scratch wucuo which-key use-package typescript-mode treemacs-projectile treemacs-persp treemacs-magit smartparens sharper rainbow-delimiters prettier-js org-bullets no-littering lsp-ui lsp-ivy ivy-rich hl-todo helpful git-gutter format-all forge eshell-toggle doom-themes doom-modeline dimmer dap-mode csharp-mode counsel-projectile company-box command-log-mode)))
+   '(org-superstar dotenv-mode persistent-scratch wucuo which-key use-package typescript-mode treemacs-projectile treemacs-persp treemacs-magit smartparens sharper rainbow-delimiters prettier-js org-bullets no-littering lsp-ui lsp-ivy ivy-rich hl-todo helpful git-gutter format-all forge eshell-toggle doom-themes doom-modeline dimmer dap-mode csharp-mode counsel-projectile company-box command-log-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
