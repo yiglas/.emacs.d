@@ -389,6 +389,88 @@
   (when (file-directory-p "~/code")
     (setq projectile-project-search-path `("~/code"))))
 
+;; (require 'persp)
+
+  ;; (defvar +workspaces-project-dir nil)
+  ;; (defvar +workspaces-on-switch-project-behavior 'non-empty)
+  ;; (defalias #'workspace-p #'perspective-p)
+
+  ;; (defun +workspace-buffer-list ()
+  ;;   (let ((persp (or persp (+workspace-current))))
+  ;;     (unless (+workspace-p persp)
+  ;;       (user-error "Not in a valid workspace (%s)" persp))
+  ;;     (persp-buffers persp)))
+
+  ;; (defun +project-root (&optional dir)
+  ;;   (let ((projectile-project-root (unless dir projectile-project-root))
+  ;; 	projectile-require-project-root)
+  ;;     (projectile-project-root dir)))
+
+  ;; (defun +project-name (&optional dir)
+  ;;   (if-let (project-root (or (+project-root dir)
+  ;; 			    (if dir (expand-file-name dir))))
+  ;;       (funcall projectile-project-name-function project-root)
+  ;;     "-"))
+
+  ;; (defun +workspace-get (name &optional noerror)
+  ;;   (cl-check-type name string)
+  ;;   (when-let (persp (persp-get-by-name name))
+  ;;     (cond ((+workspace-p persp) persp)
+  ;; 	  ((not noerror)
+  ;; 	   (error "No workspace called '%s' was found" name)))))
+
+  ;; +workspace-get
+  ;; +workspace-new
+  ;; +workspace-switch
+  ;; +fallback-buffer = doom-fallback-buffer
+  ;; +workspaces-switch-project-function
+  ;; +workspace-messague
+  ;; +workspace-rename
+  ;; +workspace-current-name
+ 
+  ;; (defun yiglas-switch-to-project (&optional dir)
+  ;;  (when dir
+  ;;     (setq +workspaces-project-dir dir))
+  ;;   ;; HACK Clear projectile-project-root, otherwise cached roots may interfere with project switch (see #3166)
+  ;;   (let (projectile-project-root)
+  ;;     (when (and persp-mode +workspaces-project-dir)
+  ;;       (when projectile-before-switch-project-hook
+  ;;         (with-temp-buffer
+  ;;           ;; Load the project dir-local variables into the switch buffer, so the
+  ;;           ;; action can make use of them
+  ;;           (setq default-directory +workspaces-project-dir)
+  ;;           (hack-dir-local-variables-non-file-buffer)
+  ;;           (run-hooks 'projectile-before-switch-project-hook)))
+  ;;       (unwind-protect
+  ;;           (if (and (not (null +workspaces-on-switch-project-behavior))
+  ;;                    (or (eq +workspaces-on-switch-project-behavior t)
+  ;;                        (equal (safe-persp-name (get-current-persp)) persp-nil-name)
+  ;;                        (+workspace-buffer-list)))
+  ;;               (let* ((persp
+  ;;                       (let ((project-name (+project-name +workspaces-project-dir)))
+  ;;                         (or (+workspace-get project-name t)
+  ;;                             (+workspace-new project-name))))
+  ;;                      (new-name (persp-name persp)))
+  ;;                 (+workspace-switch new-name)
+  ;;                 (with-current-buffer (+fallback-buffer)
+  ;;                   (setq default-directory +workspaces-project-dir)
+  ;;                   (hack-dir-local-variables-non-file-buffer))
+  ;;                 (unless current-prefix-arg
+  ;;                   (funcall +workspaces-switch-project-function +workspaces-project-dir))
+  ;;                 (+workspace-message
+  ;;                  (format "Switched to '%s' in new workspace" new-name)
+  ;;                  'success))
+  ;;             (with-current-buffer (+fallback-buffer)
+  ;;               (setq default-directory +workspaces-project-dir)
+  ;;               (hack-dir-local-variables-non-file-buffer)
+  ;;               (message "Switched to '%s'" (+project-name +workspaces-project-dir)))
+  ;;             (with-demoted-errors "Workspace error: %s"
+  ;;               (+workspace-rename (+workspace-current-name) (+project-name +workspaces-project-dir)))
+  ;;             (unless current-prefix-arg
+  ;;               (funcall +workspaces-switch-project-function +workspaces-project-dir)))
+  ;;         (run-hooks 'projectile-after-switch-project-hook)
+  ;;         (setq +workspaces-project-dir nil)))))
+
 (use-package counsel-projectile
   :after projectile
   :config (counsel-projectile-mode))
@@ -666,7 +748,7 @@
 (use-package eglot
   :commands (eglot eglot-ensure)
   :config
-  (add-to-list 'eglot-server-programs '(csharp-mode . ("/Users/dsac/.emacs.d/var/lsp/server/omnisharp-roslyn/v1.37.7/run")))
+  (add-to-list 'eglot-server-programs '(csharp-mode . ("/Users/dsac/.emacs.d/var/lsp/server/omnisharp-roslyn/v1.37.7/run" "--lsp" "--stdio")))
   (add-to-list 'eglot-server-programs '(typescript-mode . ("deno" "lsp"))))
 
 (use-package dap-mode
@@ -677,11 +759,11 @@
   (dap-ui-mode t)
   (require 'dap-node))
 
-(use-package tree-sitter
-  :defer 1)
+;; (use-package tree-sitter
+;;   :defer 1)
 
-(use-package tree-sitter-langs
-  :defer 1)
+;; (use-package tree-sitter-langs
+;;   :defer 1)
 
 (use-package typescript-mode
   :mode "\\.ts\\'"
@@ -691,12 +773,13 @@
   (setq typescript-indent-level 2))
 
 (use-package csharp-mode
-  :mode "\\.cs\\'"
-  :mode "\\.csx\\'"
+  ;; :mode "\\.cs\\'"
+  ;; :mode "\\.csx\\'"
   :config
-  (:hook csharp-mode 'lsp-deferred)
-  (add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-tree-sitter-mode))
-  (add-to-list 'auto-mode-alist '("\\.csx\\'" . csharp-tree-sitter-mode)))
+  ;; (:hook csharp-mode 'lsp-deferred)
+  (:hook csharp-mode 'eglot-ensure))
+  ;; (add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-tree-sitter-mode))
+  ;; (add-to-list 'auto-mode-alist '("\\.csx\\'" . csharp-tree-sitter-mode))
 
 (defun yiglas-csharp-lsp-mode ()
   ;; todo push this to .dir-locals.el???
@@ -705,7 +788,7 @@
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]TestOutput\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]Terraform\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]QAAutomation\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]bin\\'")
+  ;; (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]bin\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]certs\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]LoadTests\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]Artifacts\\'")
